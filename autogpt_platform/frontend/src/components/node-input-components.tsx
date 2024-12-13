@@ -17,6 +17,7 @@ import {
   BlockIOStringSubSchema,
   BlockIONumberSubSchema,
   BlockIOBooleanSubSchema,
+  BlockIOSimpleTypeSubSchema,
 } from "@/lib/autogpt-server-api/types";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { Button } from "./ui/button";
@@ -40,6 +41,7 @@ import { LocalValuedInput } from "./ui/input";
 import NodeHandle from "./NodeHandle";
 import { ConnectionData } from "./CustomNode";
 import { CredentialsInput } from "./integrations/credentials-input";
+import { MultiSelect } from "./ui/multiselect-input";
 
 type NodeObjectInputTreeProps = {
   nodeId: string;
@@ -633,6 +635,13 @@ const NodeKeyValueInput: FC<{
     </div>
   );
 };
+
+// Checking if schema is type of string
+function isStringSubSchema(
+  schema: BlockIOSimpleTypeSubSchema,
+): schema is BlockIOStringSubSchema {
+  return "type" in schema && schema.type === "string";
+}
 
 const NodeArrayInput: FC<{
   nodeId: string;
