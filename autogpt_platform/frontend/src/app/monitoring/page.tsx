@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import AutoGPTServerAPI, {
+import BackendAPI, {
   GraphExecution,
   Schedule,
   GraphMeta,
@@ -25,8 +25,7 @@ const Monitor = () => {
   const [selectedRun, setSelectedRun] = useState<GraphExecution | null>(null);
   const [sortColumn, setSortColumn] = useState<keyof Schedule>("id");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
-  const api = useMemo(() => new AutoGPTServerAPI(), []);
+  const api = useMemo(() => new BackendAPI(), []);
 
   const fetchSchedules = useCallback(async () => {
     setSchedules(await api.listSchedules());

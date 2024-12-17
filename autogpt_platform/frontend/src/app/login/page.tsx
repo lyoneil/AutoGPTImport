@@ -1,5 +1,4 @@
 "use client";
-import useUser from "@/hooks/useUser";
 import { login, signup } from "./actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,11 +16,13 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PasswordInput } from "@/components/PasswordInput";
 import { FaGoogle, FaGithub, FaDiscord, FaSpinner } from "react-icons/fa";
-import { useState } from "react";
-import { useSupabase } from "@/components/providers/SupabaseProvider";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
+import BackendAPI from "@/lib/autogpt-server-api";
+import useSupabase from "@/hooks/useSupabase";
+import Spinner from "@/components/Spinner";
 
 const loginFormSchema = z.object({
   email: z.string().email().min(2).max(64),
@@ -32,11 +33,11 @@ const loginFormSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { supabase, isLoading: isSupabaseLoading } = useSupabase();
-  const { user, isLoading: isUserLoading } = useUser();
+  const { supabase, user, isUserLoading } = useSupabase();
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const api = useMemo(() => new BackendAPI(), []);
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -48,16 +49,12 @@ export default function LoginPage() {
   });
 
   if (user) {
-    console.log("User exists, redirecting to home");
+    console.debug("User exists, redirecting to /");
     router.push("/");
   }
 
-  if (isUserLoading || isSupabaseLoading || user) {
-    return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <FaSpinner className="mr-2 h-16 w-16 animate-spin" />
-      </div>
-    );
+  if (isUserLoading || user) {
+    return <Spinner />;
   }
 
   if (!supabase) {
@@ -79,6 +76,8 @@ export default function LoginPage() {
           `http://localhost:3000/auth/callback`,
       },
     });
+
+    await api.createUser();
 
     if (!error) {
       setFeedback(null);
